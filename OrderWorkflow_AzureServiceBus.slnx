@@ -1,1 +1,17 @@
+<<<<<<< HEAD
 <Solution />
+=======
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+  </Folder>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Application/">
+    <Project Path="src/Application/WebClient/WebClient.csproj" Id="a3c2cee3-0d88-489a-9ee8-6c72e0f36f91" />
+  </Folder>
+  <Folder Name="/src/Domain/">
+    <Project Path="src/Domain/Domain.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+</Solution>
+>>>>>>> fd43e25 (Directories in solution re-structured)
