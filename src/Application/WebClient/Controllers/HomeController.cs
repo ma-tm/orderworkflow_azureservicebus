@@ -18,7 +18,7 @@ namespace WebClient.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult ListOrders()
         {
             return View();
         }
