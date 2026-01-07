@@ -11,8 +11,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton(sp =>
 {
     var cfg = sp.GetRequiredService<IConfiguration>();
-    var cs = cfg["Cosmos:ConnectionString"]!;
-    return new CosmosClient(cs, new CosmosClientOptions
+    var endpoint = cfg["Cosmos:Endpoint"]!;
+    var key = cfg["Cosmos:Key"]!;
+    return new CosmosClient(endpoint, key, new CosmosClientOptions
     {
         ApplicationName = "OrderService"
     });
@@ -54,13 +55,15 @@ app.MapPost("/api/orders", async (
 
     var total = validator.CalculateTotal(req);
 
-    var orderId = Ulid.NewUlid().ToString(); // unique id
+    // var orderId = Ulid.NewUlid().ToString(); // unique id
+    var orderId = Guid.NewGuid().ToString();
     var now = DateTimeOffset.UtcNow;
 
     var order = new Order
     {
         // Id = $"{req.TenantId}:{orderId}",     // Cosmos id
-        OrderId = orderId,
+        Id = orderId,
+        // OrderId = req.OrderId,
         TenantId = req.TenantId,
         CustomerId = req.CustomerId,
         DeliveryAddress = req.DeliveryAddress,
@@ -76,13 +79,13 @@ app.MapPost("/api/orders", async (
 
     // 2) Enqueue for manager review
     await publisher.PublishOrderSubmittedAsync(
-        new OrderSubmittedMessage(created.OrderId, created.TenantId, created.CreatedAt),
+        new OrderSubmittedMessage(created.Id, created.TenantId, created.CreatedAt),
         ct);
 
     // 3) Return to client
-    return Results.Created($"/api/orders/{created.TenantId}/{created.OrderId}",
+    return Results.Created($"/api/orders/{created.TenantId}/{created.Id}",
         new CreateOrderResponse(
-            created.OrderId,
+            created.Id,
             created.TenantId,
             created.CustomerId,
             created.OrderStatus,
@@ -101,14 +104,15 @@ app.MapGet("/api/orders/{TenantId}/{orderId}", async (
     return order is null ? Results.NotFound() : Results.Ok(order);
 });
 
-app.MapGet("/api/orders/by-customer/{customerId}", async (
+app.MapGet("/api/orders/by-customer/{TenantId}/{customerId}", async (
+    string tenantId,
     string customerId,
     int? take,
     IOrderRepository repo,
     CancellationToken ct) =>
 {
     var pageSize = Math.Clamp(take ?? 25, 1, 200);
-    var orders = await repo.GetByCustomerAsync(customerId, pageSize, ct);
+    var orders = await repo.GetByCustomerAsync(tenantId, customerId, pageSize, ct);
     return Results.Ok(orders);
 });
 

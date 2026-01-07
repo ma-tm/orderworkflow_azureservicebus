@@ -33,8 +33,9 @@ namespace OrderService.Models
     {
         [JsonProperty("tenantId")]
         public string TenantId { get; set; }
-        [JsonProperty("orderId")]
-        public string OrderId { get; set; }
+
+        [JsonProperty("id")]
+        public string Id { get; set; }
 
         [JsonProperty("customerId")]
         public string CustomerId { get; set; }
@@ -83,6 +84,7 @@ namespace OrderService.Models
 
     public sealed record CreateOrderRequest(
         string TenantId,
+        string OrderId,
         string CustomerId,
         string DeliveryAddress,
         List<OrderItem> Items
